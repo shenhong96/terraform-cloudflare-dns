@@ -1,7 +1,6 @@
 locals {
   common_config = {
     zone_id = var.zone_id
-    type    = "CNAME"
   }
 
   records = flatten([
@@ -33,15 +32,26 @@ variable "map_of_records" {
     name    = string
     proxied = bool
     ttl     = optional(number)
+    type    = string
+    priority = optional(number)
   })))
 }
 
 resource "cloudflare_record" "this" {
   for_each = { for rec in local.records : "${rec.name}-${rec.value}" => rec }
+
   name      = each.value.name
   value     = each.value.value
-  type      = local.common_config.type
+  type      = each.value.type != null ? each.value.type : "CNAME" # use type if specified, else default to CNAME
   zone_id   = local.common_config.zone_id
   ttl       = each.value.ttl
   proxied   = each.value.proxied
+  priority  = each.value.priority
+
+  # dynamic "priority" {
+  #   for_each = each.value.priority != null ? [each.value.priority] : []
+  #   content {
+  #     priority = priority.value
+  #   }
+  # }
 }
