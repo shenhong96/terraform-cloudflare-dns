@@ -32,7 +32,7 @@ variable "map_of_records" {
     name    = string
     proxied = bool
     ttl     = optional(number)
-    type    = string
+    type    = optional(string)
     priority = optional(number)
   })))
 }
